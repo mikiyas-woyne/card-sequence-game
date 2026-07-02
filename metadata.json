@@ -1,0 +1,6 @@
+{
+  "name": "Card Sequence Game",
+  "description": "lets paly with cards",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
