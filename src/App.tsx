@@ -1033,7 +1033,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-slate-950 font-sans text-white select-none relative overflow-hidden">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-950 font-sans text-white select-none relative overflow-x-hidden">
       
       {/* Visual Splash Page */}
       <AnimatePresence>
@@ -1055,7 +1055,7 @@ export default function App() {
 
       {/* Gameplay Table Screen */}
       {phase === 'playing' && (
-        <div className="game-play-container min-h-[100dvh] h-[100dvh] overflow-y-auto overflow-x-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative">
+        <div className="game-play-container min-h-[100dvh] overflow-x-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-start py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative">
           
           {/* Subtle gold lines overlay for real poker table vibe */}
           <div className="absolute inset-2 sm:inset-4 border border-yellow-500/10 rounded-2xl sm:rounded-[32px] pointer-events-none z-0" />
