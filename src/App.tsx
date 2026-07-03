@@ -1055,7 +1055,7 @@ export default function App() {
 
       {/* Gameplay Table Screen */}
       {phase === 'playing' && (
-        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative">
+        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative" style={{ paddingBottom: 'max(clamp(2px, 0.5dvh, 16px), env(safe-area-inset-bottom))' }}>
           
           {/* Subtle gold lines overlay for real poker table vibe */}
           <div className="absolute inset-2 sm:inset-4 border border-yellow-500/10 rounded-2xl sm:rounded-[32px] pointer-events-none z-0" />
@@ -1270,7 +1270,7 @@ export default function App() {
           </div>
 
           {/* Unified My Hand Row */}
-          <div className="game-my-hand-container relative z-10 my-[clamp(1px,0.4dvh,4px)] bg-slate-950/40 border border-white/5 rounded-2xl p-[clamp(1px,0.4dvh,8px)] space-y-[clamp(1px,0.3dvh,6px)] touch-none shrink-0">
+          <div className="game-my-hand-container relative z-10 my-[clamp(1px,0.4dvh,4px)] bg-slate-950/40 border border-white/5 rounded-2xl p-[clamp(1px,0.4dvh,8px)] pb-[clamp(10px,2dvh,20px)] space-y-[clamp(1px,0.3dvh,6px)] touch-none shrink-0">
             <div className="flex items-center justify-between text-[8px] sm:text-[10px] font-mono font-bold uppercase text-slate-400 px-1">
               <span className="flex items-center space-x-1">
                 <span>MY HAND ({playerHand.length} CARDS)</span>
@@ -1306,7 +1306,10 @@ export default function App() {
                 const totalCards = playerHand.length;
                 const midIdx = (totalCards - 1) / 2;
                 const rotationAngle = (idx - midIdx) * 4.2; // fanning angle spread
-                const verticalOffset = Math.pow(Math.abs(idx - midIdx), 1.8) * 1.8; // beautiful arched curve offset
+                const verticalOffset = Math.min(
+                  Math.pow(Math.abs(idx - midIdx), 1.6) * 1.4, // beautiful arched curve offset
+                  18 // cap so the dip never exceeds the reserved padding and gets clipped on short screens
+                );
 
                 return (
                   <motion.div 
