@@ -1033,7 +1033,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen max-h-screen h-[100dvh] max-h-[100dvh] bg-slate-950 font-sans text-white select-none relative overflow-hidden">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-950 font-sans text-white select-none relative overflow-hidden">
       
       {/* Visual Splash Page */}
       <AnimatePresence>
@@ -1055,7 +1055,7 @@ export default function App() {
 
       {/* Gameplay Table Screen */}
       {phase === 'playing' && (
-        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-y-auto overflow-x-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative" style={{ paddingBottom: 'max(clamp(2px, 0.5dvh, 16px), env(safe-area-inset-bottom))' }}>
+        <div className="game-play-container min-h-[100dvh] h-[100dvh] overflow-y-auto overflow-x-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative">
           
           {/* Subtle gold lines overlay for real poker table vibe */}
           <div className="absolute inset-2 sm:inset-4 border border-yellow-500/10 rounded-2xl sm:rounded-[32px] pointer-events-none z-0" />
@@ -1163,7 +1163,7 @@ export default function App() {
             )}
           </div>
           {/* POKER FELT TABLE SECTION (Luxurious Mahogany wood rim style) */}
-          <div className="game-felt-table relative z-10 flex-1 min-h-[70px] max-h-[38dvh] my-[clamp(1px,0.4dvh,4px)] border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-[clamp(2px,0.6dvh,12px)] flex flex-col justify-between relative overflow-hidden touch-pan-y shrink">
+          <div className="game-felt-table relative z-10 flex-1 min-h-[70px] max-h-[34dvh] my-[clamp(1px,0.4dvh,4px)] border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-[clamp(2px,0.6dvh,12px)] flex flex-col justify-between relative overflow-hidden touch-pan-y shrink">
             
             {/* Table layout inner dashed gold line */}
             <div className="absolute inset-1 sm:inset-2 border border-dashed border-yellow-500/15 rounded-xl sm:rounded-[32px] pointer-events-none" />
@@ -1270,7 +1270,7 @@ export default function App() {
           </div>
 
           {/* Unified My Hand Row */}
-          <div className="game-my-hand-container relative z-10 my-[clamp(1px,0.4dvh,4px)] bg-slate-950/40 border border-white/5 rounded-2xl p-[clamp(1px,0.4dvh,8px)] pb-[clamp(10px,2dvh,20px)] space-y-[clamp(1px,0.3dvh,6px)] touch-pan-y shrink-0">
+          <div className="game-my-hand-container relative z-10 my-[clamp(1px,0.4dvh,4px)] bg-slate-950/40 border border-white/5 rounded-2xl p-[clamp(1px,0.4dvh,8px)] pb-[clamp(14px,2.8dvh,28px)] space-y-[clamp(1px,0.3dvh,6px)] touch-pan-y shrink-0">
             <div className="flex items-center justify-between text-[8px] sm:text-[10px] font-mono font-bold uppercase text-slate-400 px-1">
               <span className="flex items-center space-x-1">
                 <span>MY HAND ({playerHand.length} CARDS)</span>
@@ -1284,7 +1284,7 @@ export default function App() {
             </div>
 
             {/* Hand row of cards - FANNED HELD-IN-HAND LAYOUT */}
-            <div className="game-hand-cards flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-[clamp(1px,0.4dvh,8px)] w-full h-[clamp(46px,11dvh,95px)] touch-pan-y">
+            <div className="game-hand-cards flex items-start justify-center -space-x-3.5 sm:-space-x-5 overflow-visible pt-[clamp(2px,0.5dvh,8px)] pb-[clamp(20px,3.6dvh,34px)] w-full h-[clamp(76px,14dvh,118px)] touch-pan-y">
               {/* Front drop target zone spacer */}
               <div
                 onDragOver={handleDragOver}

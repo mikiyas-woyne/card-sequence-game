@@ -3,11 +3,30 @@
 html, body, #root {
   margin: 0;
   padding: 0;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   overflow: hidden;
-  position: fixed;
   overscroll-behavior: none;
+}
+
+html {
+  height: 100%;
+}
+
+body, #root {
+  min-height: 100dvh;
+}
+
+.game-play-container {
+  box-sizing: border-box;
+  padding-bottom: max(clamp(10px, 2dvh, 22px), env(safe-area-inset-bottom)) !important;
+}
+
+@supports (height: 100svh) {
+  .game-play-container {
+    min-height: 100svh;
+    height: 100svh;
+  }
 }
 
 /*
@@ -76,5 +95,30 @@ html, body, #root {
   }
   .main-menu-container button#btn-sound-toggle {
     height: 2rem !important;
+  }
+}
+
+@media (max-height: 760px) {
+  .game-felt-table {
+    max-height: 30dvh !important;
+  }
+
+  .game-hand-cards {
+    height: clamp(82px, 15dvh, 110px) !important;
+  }
+}
+
+@media (max-height: 680px) {
+  .game-opponent-panel {
+    display: none !important;
+  }
+
+  .game-turn-indicator {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .game-felt-table {
+    max-height: 28dvh !important;
   }
 }
