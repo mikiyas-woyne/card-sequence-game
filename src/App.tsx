@@ -1055,7 +1055,7 @@ export default function App() {
 
       {/* Gameplay Table Screen */}
       {phase === 'playing' && (
-        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-0.5 sm:py-2 px-1 sm:px-4 max-w-5xl mx-auto relative">
+        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-y-auto lg:overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-0.5 sm:py-2 px-1 sm:px-4 max-w-5xl mx-auto relative">
           
           {/* Subtle gold lines overlay for real poker table vibe */}
           <div className="absolute inset-2 sm:inset-4 border border-yellow-500/10 rounded-2xl sm:rounded-[32px] pointer-events-none z-0" />
@@ -1284,7 +1284,7 @@ export default function App() {
             </div>
 
             {/* Hand row of cards - FANNED HELD-IN-HAND LAYOUT */}
-            <div className="flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-0.5 sm:py-2 w-full h-[10vh] sm:h-[12vh] max-h-[95px] min-h-[65px] touch-none">
+            <div className="game-hand-cards flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-0.5 sm:py-2 w-full h-[10vh] sm:h-[12vh] max-h-[95px] min-h-[65px] touch-none">
               {/* Front drop target zone spacer */}
               <div
                 onDragOver={handleDragOver}

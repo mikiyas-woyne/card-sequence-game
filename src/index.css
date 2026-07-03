@@ -63,7 +63,7 @@ html, body, #root {
     margin-bottom: 0.25rem !important;
     padding: 0.35rem !important;
   }
-  .game-my-hand-container .py-1 {
+  .game-my-hand-container .game-hand-cards {
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
     height: 80px !important;
@@ -151,7 +151,7 @@ html, body, #root {
     margin-bottom: 0.15rem !important;
     padding: 0.25rem !important;
   }
-  .game-my-hand-container .py-1 {
+  .game-my-hand-container .game-hand-cards {
     height: 70px !important;
   }
   .game-bottom-controls {
