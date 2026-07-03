@@ -1055,7 +1055,7 @@ export default function App() {
 
       {/* Gameplay Table Screen */}
       {phase === 'playing' && (
-        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative" style={{ paddingBottom: 'max(clamp(2px, 0.5dvh, 16px), env(safe-area-inset-bottom))' }}>
+        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-y-auto overflow-x-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative" style={{ paddingBottom: 'max(clamp(2px, 0.5dvh, 16px), env(safe-area-inset-bottom))' }}>
           
           {/* Subtle gold lines overlay for real poker table vibe */}
           <div className="absolute inset-2 sm:inset-4 border border-yellow-500/10 rounded-2xl sm:rounded-[32px] pointer-events-none z-0" />
@@ -1163,7 +1163,7 @@ export default function App() {
             )}
           </div>
           {/* POKER FELT TABLE SECTION (Luxurious Mahogany wood rim style) */}
-          <div className="game-felt-table relative z-10 flex-1 my-[clamp(1px,0.4dvh,4px)] border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-[clamp(2px,0.6dvh,12px)] flex flex-col justify-between relative min-h-0 overflow-hidden touch-none shrink">
+          <div className="game-felt-table relative z-10 flex-1 min-h-[70px] max-h-[38dvh] my-[clamp(1px,0.4dvh,4px)] border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-[clamp(2px,0.6dvh,12px)] flex flex-col justify-between relative overflow-hidden touch-none shrink">
             
             {/* Table layout inner dashed gold line */}
             <div className="absolute inset-1 sm:inset-2 border border-dashed border-yellow-500/15 rounded-xl sm:rounded-[32px] pointer-events-none" />
