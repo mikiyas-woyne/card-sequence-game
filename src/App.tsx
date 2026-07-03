@@ -15,6 +15,85 @@ import SplashScreen from './components/SplashScreen';
 import MainMenu from './components/MainMenu';
 import CardComponent from './components/CardComponent';
 
+function CocaColaCardBack({ isMini = false, count }: { isMini?: boolean; count?: number }) {
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-red-850 flex flex-col justify-between p-1 sm:p-1.5 rounded-lg sm:rounded-xl border border-red-500 overflow-hidden shadow-inner select-none">
+      {/* Dynamic Spencerian White Swirl Ribbon */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute w-[180%] h-6 sm:h-8 opacity-90 -rotate-[8deg] translate-y-1 sm:translate-y-2">
+          <path d="M0,50 Q25,25 50,50 T100,50 L100,100 L0,100 Z" fill="white" className="opacity-95" />
+          <path d="M0,54 Q25,29 50,54 T100,54 L100,100 L0,100 Z" fill="#facc15" className="opacity-40" />
+        </svg>
+      </div>
+      
+      {/* Vintage thin double-border outline */}
+      <div className="absolute inset-0.5 sm:inset-1 border border-white/20 rounded-md sm:rounded-lg pointer-events-none" />
+
+      <div className="relative z-10 flex flex-col h-full justify-between items-center text-white w-full">
+        {/* Top Tagline */}
+        <span className="text-[5px] sm:text-[7px] font-sans tracking-[0.25em] font-black text-red-100 uppercase leading-none mt-0.5 drop-shadow">
+          CLASSIC
+        </span>
+        
+        {/* Elegant Retro Script Logo */}
+        <div className="flex flex-col items-center justify-center rotate-[-8deg] my-auto">
+          <span className="text-[8px] sm:text-xs font-serif italic font-black text-white leading-none tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+            Coca-Cola
+          </span>
+          <span className="text-[4px] sm:text-[6px] font-sans uppercase tracking-[0.3em] font-extrabold text-red-200/80 leading-none mt-0.5">
+            BRAND
+          </span>
+        </div>
+
+        {/* Display remaining count if passed, else "Enjoy" tagline */}
+        {count !== undefined ? (
+          <span className="text-[8px] sm:text-[10px] font-mono font-black text-white bg-red-950/50 border border-white/10 px-1 sm:px-1.5 py-0.5 rounded-md leading-none shadow-sm mb-0.5">
+            {count}
+          </span>
+        ) : (
+          <span className="text-[5px] sm:text-[6px] font-serif italic text-red-100 font-bold leading-none mb-0.5 drop-shadow">
+            Enjoy
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ensureNoConsecutiveCrazyCards(pile: Card[]): Card[] {
+  const result: Card[] = [];
+  const crazyCards: Card[] = [];
+  const normalCards: Card[] = [];
+
+  for (const card of pile) {
+    if (card.rank === '8' || card.rank === 'J') {
+      crazyCards.push(card);
+    } else {
+      normalCards.push(card);
+    }
+  }
+
+  let normalIdx = 0;
+  let crazyIdx = 0;
+
+  while (crazyIdx < crazyCards.length || normalIdx < normalCards.length) {
+    const lastCard = result[result.length - 1];
+    const lastIsCrazy = lastCard && (lastCard.rank === '8' || lastCard.rank === 'J');
+
+    if (lastIsCrazy && normalIdx < normalCards.length) {
+      result.push(normalCards[normalIdx++]);
+    } else if (crazyIdx < crazyCards.length) {
+      result.push(crazyCards[crazyIdx++]);
+    } else if (normalIdx < normalCards.length) {
+      result.push(normalCards[normalIdx++]);
+    } else {
+      result.push(crazyCards[crazyIdx++]);
+    }
+  }
+
+  return result;
+}
+
 export default function App() {
   // Phase Management
   const [phase, setPhase] = useState<GamePhase>('splash');
@@ -26,6 +105,7 @@ export default function App() {
   const [activeCrazySuit, setActiveCrazySuit] = useState<Suit | null>(null);
   const [isSuitSelectionOpen, setIsSuitSelectionOpen] = useState<boolean>(false);
   const [playedCrazyCard, setPlayedCrazyCard] = useState<Card | null>(null);
+  const [isCrazyCardForbidden, setIsCrazyCardForbidden] = useState<boolean>(false);
   
   // Game Settings
   const [settings, setSettings] = useState<GameSettings>({
@@ -57,10 +137,15 @@ export default function App() {
   // Dealing Animation state
   const [isDealing, setIsDealing] = useState<boolean>(false);
 
+  // Penalty state for staggered drawing animation
+  const [isPenalizingPlayer, setIsPenalizingPlayer] = useState<boolean>(false);
+  const [penaltyProgress, setPenaltyProgress] = useState<{ current: number; total: number } | null>(null);
+
   // Opponent's winning partition for verification/proof
   const [aiWinningPartition, setAiWinningPartition] = useState<Partition | null>(null);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (isPenalizingPlayer) return;
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -71,6 +156,7 @@ export default function App() {
 
   const handleDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
+    if (isPenalizingPlayer) return;
     
     // Check if dragging from discard pile (where draggedIndex is set to -100)
     if (draggedIndex === -100) {
@@ -180,8 +266,8 @@ export default function App() {
       );
     } else {
       // Crazy Game Setup
-      // 52-card standard deck (no Jokers)
-      const deck = shuffleDeck(createDeck().filter(c => !c.isJoker));
+      // 52-card standard deck (no Jokers) with no consecutive crazy cards
+      const deck = ensureNoConsecutiveCrazyCards(shuffleDeck(createDeck().filter(c => !c.isJoker)));
       
       // Deal 7 cards to player, 7 to AI
       const pHand = deck.slice(0, 7);
@@ -194,7 +280,8 @@ export default function App() {
       );
       if (startCardIndex === -1) startCardIndex = 0;
       const startCard = remainingDeck[startCardIndex];
-      remainingDeck = remainingDeck.filter((_, idx) => idx !== startCardIndex);
+      // Filter out start card and ensure no consecutive crazy cards in the remaining draw pile
+      remainingDeck = ensureNoConsecutiveCrazyCards(remainingDeck.filter((_, idx) => idx !== startCardIndex));
 
       setPlayerHand(pHand);
       setAiHand(aHand);
@@ -209,6 +296,7 @@ export default function App() {
       setActiveCrazySuit(null);
       setPlayedCrazyCard(null);
       setIsSuitSelectionOpen(false);
+      setIsCrazyCardForbidden(false);
 
       // Turn setup
       setCurrentTurn('player');
@@ -261,6 +349,7 @@ export default function App() {
 
   // Handle Card Tap - Selection only, no swapping!
   const handleCardTap = (card: Card) => {
+    if (isPenalizingPlayer) return;
     audio.playPop();
 
     if (selectedCard && selectedCard.id === card.id) {
@@ -331,12 +420,12 @@ export default function App() {
   };
 
   // Helper to check if a card is playable in Crazy mode
-  const isCardPlayableInCrazy = (card: Card, topCard: Card, activeSuit: Suit | null): boolean => {
+  const isCardPlayableInCrazy = (card: Card, topCard: Card, activeSuit: Suit | null, forbidCrazyCards: boolean = false): boolean => {
     if (card.isJoker) return false; // Filtered out
     
-    // 8 and Jack are Crazy Cards: Playable at any time!
+    // 8 and Jack are Crazy Cards: Playable at any time, UNLESS they are currently forbidden!
     if (card.rank === '8' || card.rank === 'J') {
-      return true;
+      return !forbidCrazyCards;
     }
 
     if (activeSuit) {
@@ -357,7 +446,7 @@ export default function App() {
       if (tempDraw.length === 0) {
         if (tempDiscard.length > 1) {
           const topCard = tempDiscard[0];
-          tempDraw = shuffleDeck(tempDiscard.slice(1));
+          tempDraw = ensureNoConsecutiveCrazyCards(shuffleDeck(tempDiscard.slice(1)));
           tempDiscard = [topCard];
         } else {
           break; // absolutely out of cards
@@ -370,10 +459,34 @@ export default function App() {
     }
 
     if (drawn.length > 0) {
-      audio.playDraw();
-      setPlayerHand(prev => [...prev, ...drawn]);
+      // Setup animated staggered penalty
+      setIsPenalizingPlayer(true);
+      setPenaltyProgress({ current: 0, total: drawn.length });
+      setRefereeCommentary(`🚨 PUNISHMENT! You must draw ${drawn.length} penalty cards!`);
+
+      // Immediately set the final draw and discard piles so they are in sync
       setDrawPile(tempDraw);
       setDiscardPile(tempDiscard);
+
+      let step = 0;
+      const interval = setInterval(() => {
+        if (step < drawn.length) {
+          const card = drawn[step];
+          audio.playDraw();
+          setPlayerHand(prev => [...prev, card]);
+          setDrawnCardId(card.id);
+          step++;
+          setPenaltyProgress({ current: step, total: drawn.length });
+          setRefereeCommentary(`🚨 PUNISHMENT! Drawing card ${step} of ${drawn.length}...`);
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            setIsPenalizingPlayer(false);
+            setPenaltyProgress(null);
+            setRefereeCommentary(`Penalty finished. You drew ${drawn.length} cards! Match the top card or draw.`);
+          }, 600);
+        }
+      }, 700); // Stagger interval (700ms)
     }
   };
 
@@ -387,7 +500,7 @@ export default function App() {
       if (tempDraw.length === 0) {
         if (tempDiscard.length > 1) {
           const topCard = tempDiscard[0];
-          tempDraw = shuffleDeck(tempDiscard.slice(1));
+          tempDraw = ensureNoConsecutiveCrazyCards(shuffleDeck(tempDiscard.slice(1)));
           tempDiscard = [topCard];
         } else {
           break; // absolutely out of cards
@@ -424,7 +537,7 @@ export default function App() {
       if (currentDiscard.length > 1) {
         audio.playDraw();
         const topCard = currentDiscard[0];
-        const reshuffledDeck = shuffleDeck(currentDiscard.slice(1));
+        const reshuffledDeck = ensureNoConsecutiveCrazyCards(shuffleDeck(currentDiscard.slice(1)));
         nextCard = reshuffledDeck[0];
         setDrawPile(reshuffledDeck.slice(1));
         setDiscardPile([topCard]);
@@ -433,7 +546,7 @@ export default function App() {
         setDrawnCardId(nextCard.id);
         
         // Check if playable
-        const isPlayable = isCardPlayableInCrazy(nextCard, topCard, activeCrazySuit);
+        const isPlayable = isCardPlayableInCrazy(nextCard, topCard, activeCrazySuit, isCrazyCardForbidden);
         if (isPlayable) {
           setRefereeCommentary(`You reshuffled and drew ${formatCardName(nextCard)}. It's playable! Select it and tap PLAY CARD.`);
         } else {
@@ -453,7 +566,7 @@ export default function App() {
       
       // Check if playable
       const topCard = currentDiscard[0];
-      const isPlayable = isCardPlayableInCrazy(nextCard, topCard, activeCrazySuit);
+      const isPlayable = isCardPlayableInCrazy(nextCard, topCard, activeCrazySuit, isCrazyCardForbidden);
       if (isPlayable) {
         setRefereeCommentary(`You drew ${formatCardName(nextCard)}. This card is playable! Select it and tap PLAY CARD.`);
       } else {
@@ -472,14 +585,20 @@ export default function App() {
     }
 
     const topCard = discardPile[0];
-    const isPlayable = isCardPlayableInCrazy(selectedCard, topCard, activeCrazySuit);
+    const isPlayable = isCardPlayableInCrazy(selectedCard, topCard, activeCrazySuit, isCrazyCardForbidden);
 
     if (!isPlayable) {
-      setRefereeCommentary(
-        activeCrazySuit 
-          ? `Illegal move! You must match the active suit (${activeCrazySuit.toUpperCase()}) or play an 8 or Jack.`
-          : `Illegal move! Match the top card's rank or suit, or play an 8 or Jack.`
-      );
+      if ((selectedCard.rank === '8' || selectedCard.rank === 'J') && isCrazyCardForbidden) {
+        setRefereeCommentary(
+          "Illegal move! Opponent commanded a suit using a crazy card. You must play at least one normal card matching the suit before you can play a crazy card!"
+        );
+      } else {
+        setRefereeCommentary(
+          activeCrazySuit 
+            ? `Illegal move! You must match the active suit (${activeCrazySuit.toUpperCase()}) or play an 8 or Jack.`
+            : `Illegal move! Match the top card's rank or suit, or play an 8 or Jack.`
+        );
+      }
       audio.playError();
       return;
     }
@@ -499,13 +618,13 @@ export default function App() {
     setPlayerHand(updatedHand);
     setSelectedCard(null);
     setDrawnCardId(null);
-    
-    // Set active crazy suit back to null
-    setActiveCrazySuit(null);
 
     // Play on discard pile
     const updatedDiscard = [selectedCard, ...discardPile];
     setDiscardPile(updatedDiscard);
+
+    // Reset crazy card forbidden flag since a normal card has been played!
+    setIsCrazyCardForbidden(false);
 
     let commentary = `You played ${formatCardName(selectedCard)}.`;
 
@@ -536,7 +655,7 @@ export default function App() {
     setRefereeCommentary(commentary + " Opponent is calculating...");
     
     // Trigger AI turn
-    triggerCrazyAiMove(updatedDiscard);
+    triggerCrazyAiMove(updatedDiscard, activeCrazySuit);
   };
 
   // Pass Turn in Crazy Mode
@@ -557,7 +676,7 @@ export default function App() {
     setRefereeCommentary("You passed your turn. Opponent is thinking...");
     
     // Trigger AI turn
-    triggerCrazyAiMove(discardPile);
+    triggerCrazyAiMove(discardPile, activeCrazySuit);
   };
 
   // Suit Selection Callback in Crazy Mode
@@ -582,6 +701,9 @@ export default function App() {
     setPlayedCrazyCard(null);
     setIsSuitSelectionOpen(false);
 
+    // A crazy card has been used to command a suit, so the opponent must play a normal card first!
+    setIsCrazyCardForbidden(true);
+
     // Check Win Condition
     if (updatedHand.length === 0) {
       audio.playWin();
@@ -600,17 +722,18 @@ export default function App() {
     setRefereeCommentary(`You played ${formatCardName(playedCrazyCard)} and chose ${suit.toUpperCase()}! Opponent's turn.`);
     
     // Trigger AI turn
-    triggerCrazyAiMove(updatedDiscard);
+    triggerCrazyAiMove(updatedDiscard, suit);
   };
 
   // AI Decision Engine for Crazy Mode
-  const triggerCrazyAiMove = (currentDiscardPile: Card[]) => {
+  const triggerCrazyAiMove = (currentDiscardPile: Card[], overrideActiveSuit?: Suit | null) => {
     setIsAiThinking(true);
     
     setTimeout(() => {
       const topCard = currentDiscardPile[0];
+      const actualActiveSuit = overrideActiveSuit !== undefined ? overrideActiveSuit : activeCrazySuit;
       // Find all valid cards AI can play
-      const playableCards = aiHand.filter(card => isCardPlayableInCrazy(card, topCard, activeCrazySuit));
+      const playableCards = aiHand.filter(card => isCardPlayableInCrazy(card, topCard, actualActiveSuit, isCrazyCardForbidden));
       
       if (playableCards.length > 0) {
         // AI has at least one playable card. Prioritize penalties, then normal cards, then wildcards
@@ -648,10 +771,8 @@ export default function App() {
           
           setActiveCrazySuit(bestSuit);
           commentary += ` Opponent chose ${bestSuit.toUpperCase()} as the next active suit!`;
+          setIsCrazyCardForbidden(true);
         } else {
-          // Clear active crazy suit since a normal card was played
-          setActiveCrazySuit(null);
-          
           // Check penalties
           if (cardToPlay.rank === '2') {
             commentary += ` PENALTY! You must immediately draw 2 cards!`;
@@ -660,6 +781,7 @@ export default function App() {
             commentary += ` ULTRA PENALTY! You must immediately draw 5 cards!`;
             penalizePlayer(5, drawPile, updatedDiscardPile);
           }
+          setIsCrazyCardForbidden(false);
         }
         
         // Check if AI wins
@@ -691,7 +813,7 @@ export default function App() {
           if (currentDiscard.length > 1) {
             audio.playDraw();
             const topCard = currentDiscard[0];
-            currentDrawPile = shuffleDeck(currentDiscard.slice(1));
+            currentDrawPile = ensureNoConsecutiveCrazyCards(shuffleDeck(currentDiscard.slice(1)));
             currentDiscard = [topCard];
             setDiscardPile(currentDiscard);
           } else {
@@ -710,7 +832,7 @@ export default function App() {
         setDrawPile(nextDrawPile);
         
         // Check if drawn card is playable
-        const isDrawnPlayable = isCardPlayableInCrazy(drawnCard, currentDiscard[0], activeCrazySuit);
+        const isDrawnPlayable = isCardPlayableInCrazy(drawnCard, currentDiscard[0], actualActiveSuit, isCrazyCardForbidden);
         
         if (isDrawnPlayable) {
           // AI plays the drawn card immediately!
@@ -733,9 +855,8 @@ export default function App() {
             });
             setActiveCrazySuit(bestSuit);
             commentary += ` Opponent chose ${bestSuit.toUpperCase()} as the next active suit!`;
+            setIsCrazyCardForbidden(true);
           } else {
-            setActiveCrazySuit(null);
-            
             if (drawnCard.rank === '2') {
               commentary += ` PENALTY! You must immediately draw 2 cards!`;
               penalizePlayer(2, nextDrawPile, updatedDiscardPile);
@@ -743,6 +864,7 @@ export default function App() {
               commentary += ` ULTRA PENALTY! You must immediately draw 5 cards!`;
               penalizePlayer(5, nextDrawPile, updatedDiscardPile);
             }
+            setIsCrazyCardForbidden(false);
           }
           
           setIsAiThinking(false);
@@ -933,7 +1055,7 @@ export default function App() {
 
       {/* Gameplay Table Screen */}
       {phase === 'playing' && (
-        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-1 sm:py-2.5 px-2.5 sm:px-6 max-w-5xl mx-auto relative">
+        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-0.5 sm:py-2 px-1 sm:px-4 max-w-5xl mx-auto relative">
           
           {/* Subtle gold lines overlay for real poker table vibe */}
           <div className="absolute inset-2 sm:inset-4 border border-yellow-500/10 rounded-2xl sm:rounded-[32px] pointer-events-none z-0" />
@@ -976,13 +1098,13 @@ export default function App() {
           </div>
 
           {/* Opponent Hand Panel */}
-          <div className="game-opponent-panel relative z-10 flex flex-col items-center bg-slate-950/40 border border-white/5 rounded-xl p-1.5 mb-1 sm:mb-2">
+          <div className="game-opponent-panel relative z-10 flex flex-col items-center bg-slate-950/40 border border-white/5 rounded-xl p-1 mb-0.5 sm:mb-1.5 shrink-0">
             <div className="text-[8px] sm:text-[9px] font-mono tracking-widest text-slate-500 uppercase mb-0.5 sm:mb-1 flex items-center space-x-1">
               {isAiThinking && <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping mr-1 inline-block" />}
               <span>{isAiThinking ? 'AI OPPONENT IS THINKING...' : 'AI OPPONENT'}</span>
             </div>
             
-            <div className="flex -space-x-3.5 justify-center py-1.5">
+            <div className="flex -space-x-3.5 justify-center py-1">
               {aiHand.map((_, idx) => (
                 <motion.div 
                   key={`ai-card-${idx}`}
@@ -992,21 +1114,16 @@ export default function App() {
                     ? { type: "spring", stiffness: 80, damping: 14, delay: idx * 0.12 }
                     : { type: "spring", stiffness: 300, damping: 28 }
                   }
-                  className="relative w-7 h-10 sm:w-9 sm:h-12 bg-red-600 rounded-md border border-red-500 shadow-md overflow-hidden flex flex-col items-center justify-center"
+                  className="relative w-7 h-10 sm:w-9 sm:h-12 rounded-lg shadow-md overflow-hidden flex flex-col items-center justify-center"
                 >
-                  {/* Miniature Coca-Cola back */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-red-800" />
-                  <div className="absolute top-1/2 left-0 right-0 h-2 bg-white/25 -skew-y-12 transform -translate-y-1/2 pointer-events-none" />
-                  <div className="absolute top-1/2 left-0 right-0 h-1 bg-white -skew-y-6 transform -translate-y-1/2 opacity-90 pointer-events-none" />
-                  <div className="absolute top-[60%] left-0 right-0 h-0.5 bg-yellow-400/50 -skew-y-6 transform pointer-events-none" />
-                  <span className="relative z-10 text-[6px] font-serif italic text-white leading-none rotate-[-6deg]">Enjoy</span>
+                  <CocaColaCardBack isMini={true} />
                 </motion.div>
               ))}
             </div>
           </div>
 
           {/* TURN POINTER INDICATOR */}
-          <div className="game-turn-indicator relative z-20 flex justify-center my-1 sm:my-1.5">
+          <div className="game-turn-indicator relative z-20 flex justify-center my-0.5 sm:my-1 shrink-0">
             {currentTurn === 'player' ? (
               <motion.div 
                 initial={{ y: -5, opacity: 0 }}
@@ -1046,7 +1163,7 @@ export default function App() {
             )}
           </div>
           {/* POKER FELT TABLE SECTION (Luxurious Mahogany wood rim style) */}
-          <div className="game-felt-table relative z-10 flex-1 my-0.5 sm:my-1.5 border-4 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-2xl sm:rounded-[40px] p-1.5 sm:p-3 flex flex-col justify-between relative min-h-[100px] sm:min-h-[130px] touch-none">
+          <div className="game-felt-table relative z-10 flex-1 my-0.5 sm:my-1 border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-1 sm:p-3 flex flex-col justify-between relative min-h-[90px] sm:min-h-[130px] touch-none shrink">
             
             {/* Table layout inner dashed gold line */}
             <div className="absolute inset-1 sm:inset-2 border border-dashed border-yellow-500/15 rounded-xl sm:rounded-[32px] pointer-events-none" />
@@ -1058,31 +1175,16 @@ export default function App() {
               <div className="flex flex-col items-center text-center">
                 <button
                   onClick={handleDrawCard}
-                  disabled={currentTurn !== 'player' || playerHasDrawn}
+                  disabled={currentTurn !== 'player' || playerHasDrawn || isPenalizingPlayer}
                   className={`
                     relative w-14 sm:w-16 aspect-[5/7] rounded-xl cursor-pointer active:scale-95 transition-all flex items-center justify-center overflow-hidden
-                    ${(currentTurn === 'player' && !playerHasDrawn) 
+                    ${(currentTurn === 'player' && !playerHasDrawn && !isPenalizingPlayer) 
                       ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-emerald-900 shadow-[0_0_15px_rgba(234,179,8,0.6)] animate-pulse' 
                       : 'border border-red-500 shadow-lg'
                     }
                   `}
                 >
-                  {/* Premium Coca-Cola brand card back */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-red-800 flex flex-col justify-between p-1.5 sm:p-2">
-                    <div className="absolute top-1/2 left-0 right-0 h-4 bg-white/20 -skew-y-12 transform -translate-y-1/2 pointer-events-none" />
-                    <div className="absolute top-1/2 left-0 right-0 h-2 bg-white -skew-y-6 transform -translate-y-1/2 opacity-95 pointer-events-none" />
-                    <div className="absolute top-[58%] left-0 right-0 h-[3px] bg-yellow-400 -skew-y-6 transform pointer-events-none" />
-                    
-                    <div className="relative z-10 flex flex-col h-full justify-between items-center text-white w-full">
-                      <span className="text-[6px] sm:text-[7px] font-serif italic text-red-100 uppercase tracking-widest font-black leading-none mt-0.5">CLASSIC</span>
-                      <span className="text-xs sm:text-sm font-serif italic font-extrabold text-white select-none drop-shadow-md tracking-tight leading-none rotate-[-8deg] my-auto">
-                        Enjoy
-                      </span>
-                      <span className="text-[9px] sm:text-xs font-mono font-black text-white bg-red-950/40 px-1.5 py-0.5 rounded-md border border-white/10 mt-auto leading-none">
-                        {drawPile.length}
-                      </span>
-                    </div>
-                  </div>
+                  <CocaColaCardBack count={drawPile.length} />
                 </button>
                 <span className="text-[8px] font-mono text-emerald-400/80 tracking-wider uppercase mt-1">
                   DRAW ({drawPile.length})
@@ -1095,13 +1197,13 @@ export default function App() {
                   <div 
                     className={`relative cursor-pointer transition-all duration-200 ${
                       (currentTurn === 'player' && !playerHasDrawn && gameType === 'sequence') 
-                        ? 'scale-105 filter drop-shadow-[0_0_8px_rgba(234,179,8,0.7)]' 
-                        : ''
-                    }`}
+                        ? 'scale-115 filter drop-shadow-[0_0_12px_rgba(234,179,8,0.95)]' 
+                        : 'scale-105 hover:scale-110 filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] hover:drop-shadow-[0_4px_18px_rgba(255,255,255,0.15)]'
+                    } rounded-xl p-0.5 bg-white/5 border border-white/10`}
                   >
                     <CardComponent 
                       card={discardPile[0]} 
-                      isMini={true} 
+                      isMini={false} // Make the discard card bigger and noticeable!
                       draggable={currentTurn === 'player' && !playerHasDrawn && gameType === 'sequence'}
                       onDragStart={(e) => {
                         if (gameType !== 'sequence') return;
@@ -1112,7 +1214,7 @@ export default function App() {
                       onClick={handleDrawFromDiscard}
                     />
                     {discardPile.length > 1 && (
-                      <div className="absolute -bottom-0.5 -right-0.5 -z-10 w-10 h-14 rounded-xl bg-slate-900 border border-slate-800 rotate-3 opacity-60" />
+                      <div className="absolute -bottom-1 -right-1 -z-10 w-11 sm:w-16 h-14 rounded-xl bg-slate-950 border border-slate-800 rotate-3 opacity-70" />
                     )}
  
                     {/* Floating guide indicator above the discard pile card */}
@@ -1123,7 +1225,7 @@ export default function App() {
                     )}
                   </div>
                 ) : (
-                  <div className="w-10 h-14 rounded-lg border border-dashed border-emerald-850/60 flex items-center justify-center text-emerald-800 bg-emerald-950/10">
+                  <div className="w-11 sm:w-16 aspect-[5/7] rounded-lg border border-dashed border-emerald-850/60 flex items-center justify-center text-emerald-800 bg-emerald-950/10">
                     <span className="text-[8px] font-mono uppercase">EMPTY</span>
                   </div>
                 )}
@@ -1134,15 +1236,15 @@ export default function App() {
  
             </div>
 
-            {/* Crazy Active Suit Overlay HUD */}
+            {/* Crazy Active Suit Overlay HUD - aligned elegantly in the top-right corner of the felt table */}
             {gameType === 'crazy' && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-slate-950/85 border border-slate-800/80 px-3.5 py-1.5 rounded-full z-20 flex items-center space-x-2 shadow-xl">
-                <span className="text-[8px] font-mono tracking-wider text-slate-400">ACTIVE SUIT:</span>
+              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-slate-950/95 border border-yellow-500/20 rounded-xl px-2.5 py-1 z-35 flex flex-col items-center justify-center shadow-xl backdrop-blur-md min-w-[70px]">
+                <span className="text-[6px] sm:text-[8px] font-mono tracking-wider text-slate-400 uppercase">SUIT</span>
                 {activeCrazySuit ? (
-                  <span className={`text-[10px] font-black uppercase font-mono flex items-center gap-1.5 ${
+                  <span className={`text-[10px] sm:text-xs font-black uppercase font-mono flex items-center gap-1 ${
                     activeCrazySuit === 'hearts' || activeCrazySuit === 'diamonds' ? 'text-rose-400' : 'text-slate-100'
                   }`}>
-                    <span className="text-sm">
+                    <span className="text-xs sm:text-sm">
                       {activeCrazySuit === 'hearts' && '♥'}
                       {activeCrazySuit === 'diamonds' && '♦'}
                       {activeCrazySuit === 'clubs' && '♣'}
@@ -1151,10 +1253,10 @@ export default function App() {
                     <span>{activeCrazySuit}</span>
                   </span>
                 ) : (
-                  <span className={`text-[10px] font-black uppercase font-mono flex items-center gap-1.5 ${
+                  <span className={`text-[10px] sm:text-xs font-black uppercase font-mono flex items-center gap-1 ${
                     discardPile[0]?.suit === 'hearts' || discardPile[0]?.suit === 'diamonds' ? 'text-rose-400' : 'text-slate-100'
                   }`}>
-                    <span className="text-sm">
+                    <span className="text-xs sm:text-sm">
                       {discardPile[0]?.suit === 'hearts' && '♥'}
                       {discardPile[0]?.suit === 'diamonds' && '♦'}
                       {discardPile[0]?.suit === 'clubs' && '♣'}
@@ -1168,21 +1270,21 @@ export default function App() {
           </div>
 
           {/* Unified My Hand Row */}
-          <div className="game-my-hand-container relative z-10 my-0.5 sm:my-1.5 bg-slate-950/40 border border-white/5 rounded-2xl p-1 sm:p-2 space-y-0.5 sm:space-y-1.5 touch-none">
-            <div className="flex items-center justify-between text-[10px] font-mono font-bold uppercase text-slate-400">
+          <div className="game-my-hand-container relative z-10 my-0.5 sm:my-1 bg-slate-950/40 border border-white/5 rounded-2xl p-0.5 sm:p-2 space-y-0.5 sm:space-y-1.5 touch-none shrink-0">
+            <div className="flex items-center justify-between text-[8px] sm:text-[10px] font-mono font-bold uppercase text-slate-400 px-1">
               <span className="flex items-center space-x-1">
                 <span>MY HAND ({playerHand.length} CARDS)</span>
               </span>
-              <span className="text-emerald-400 animate-pulse text-[9px] sm:text-[10px]">
+              <span className="text-emerald-400 animate-pulse text-[8px] sm:text-[10px] text-right truncate max-w-[180px] sm:max-w-none">
                 {gameType === 'crazy' 
-                  ? (selectedCard ? "TAP PLAY CARD AT THE BOTTOM TO SUBMIT!" : "SELECT A VALID CARD TO PLAY!")
-                  : (selectedCard ? "TAP ANOTHER CARD TO SWAP!" : "DRAG CARDS TO REORDER OR TAP TO SELECT")
+                  ? (selectedCard ? "TAP PLAY CARD TO SUBMIT!" : "SELECT A VALID CARD!")
+                  : (selectedCard ? "TAP ANOTHER CARD TO SWAP!" : "DRAG TO REORDER / TAP")
                 }
               </span>
             </div>
 
             {/* Hand row of cards - FANNED HELD-IN-HAND LAYOUT */}
-            <div className="flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-1 sm:py-2 w-full h-[12vh] max-h-[105px] min-h-[75px] touch-none">
+            <div className="flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-0.5 sm:py-2 w-full h-[10vh] sm:h-[12vh] max-h-[95px] min-h-[65px] touch-none">
               {/* Front drop target zone spacer */}
               <div
                 onDragOver={handleDragOver}
@@ -1211,7 +1313,10 @@ export default function App() {
                     key={card.id} 
                     className="flex flex-col items-center"
                     layout
-                    initial={isDealing ? { opacity: 0, scale: 0.2, y: 250, x: -100, rotate: -180 } : false}
+                    initial={isDealing 
+                      ? { opacity: 0, scale: 0.2, y: 250, x: -100, rotate: -180 } 
+                      : (card.id === drawnCardId ? { opacity: 0, scale: 0.2, y: -200, x: -100, rotate: 90 } : false)
+                    }
                     animate={{ 
                       opacity: 1, 
                       scale: isSelected ? 1.1 : (isDrawn ? 1.08 : 1), 
@@ -1221,7 +1326,9 @@ export default function App() {
                     }}
                     transition={isDealing 
                       ? { type: "spring", stiffness: 80, damping: 14, delay: idx * 0.12 }
-                      : { type: "spring", stiffness: 300, damping: 28 }
+                      : (card.id === drawnCardId 
+                        ? { type: "spring", stiffness: 180, damping: 16 } 
+                        : { type: "spring", stiffness: 300, damping: 28 })
                     }
                     style={{
                       zIndex: isSelected ? 50 : (isDrawn ? 45 : idx + 10),
@@ -1246,15 +1353,15 @@ export default function App() {
           </div>
 
           {/* Responsive Bottom Controls */}
-          <div className="game-bottom-controls relative w-full bg-slate-950/90 border border-slate-900 py-1 sm:py-2 px-3 sm:px-4 flex items-center justify-between gap-2 z-45 backdrop-blur-md rounded-xl mt-0.5 sm:mt-1">
+          <div className="game-bottom-controls relative w-full bg-slate-950/90 border border-slate-900 py-0.5 sm:py-1.5 px-2.5 sm:px-4 flex items-center justify-between gap-1.5 z-45 backdrop-blur-md rounded-xl mt-0.5 sm:mt-1 shrink-0">
             {gameType === 'sequence' ? (
               <>
                 {/* Auto-Arrange */}
                 <button
                   onClick={handlePlayerAutoArrange}
-                  className="flex-1 h-10 sm:h-12 bg-slate-900 border border-slate-800 rounded-xl font-mono text-[10px] sm:text-[11px] font-bold text-slate-300 flex items-center justify-center space-x-1 cursor-pointer active:scale-95 transition-transform"
+                  className="flex-1 h-9 sm:h-11 bg-slate-900 border border-slate-800 rounded-xl font-mono text-[9px] sm:text-[11px] font-bold text-slate-300 flex items-center justify-center space-x-1 cursor-pointer active:scale-95 transition-transform"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-yellow-400 animate-pulse" />
+                  <Sparkles className="w-3 h-3 text-yellow-400 animate-pulse" />
                   <span>AUTO SORT</span>
                 </button>
 
@@ -1263,7 +1370,7 @@ export default function App() {
                   onClick={handleDiscard}
                   disabled={currentTurn !== 'player' || !playerHasDrawn || !selectedCard}
                   className={`
-                    flex-1 h-10 sm:h-12 rounded-xl font-bold text-[10px] sm:text-xs tracking-wider flex items-center justify-center space-x-1 cursor-pointer active:scale-95 transition-all
+                    flex-1 h-9 sm:h-11 rounded-xl font-bold text-[9px] sm:text-xs tracking-wider flex items-center justify-center space-x-1 cursor-pointer active:scale-95 transition-all
                     ${(currentTurn === 'player' && playerHasDrawn && selectedCard)
                       ? 'bg-rose-600 text-white border border-rose-400/40 shadow-[0_0_15px_rgba(220,38,38,0.4)]'
                       : 'bg-slate-900/50 text-slate-500 border border-slate-950 cursor-not-allowed'
@@ -1277,9 +1384,9 @@ export default function App() {
                 <button
                   onClick={handleDeclareWin}
                   disabled={currentTurn !== 'player'}
-                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-amber-500 to-yellow-600 border border-amber-300/30 rounded-xl font-bold text-[10px] sm:text-xs tracking-wider text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.3)] flex items-center justify-center space-x-1 active:scale-95 transition-transform cursor-pointer"
+                  className="flex-1 h-9 sm:h-11 bg-gradient-to-r from-amber-500 to-yellow-600 border border-amber-300/30 rounded-xl font-bold text-[9px] sm:text-xs tracking-wider text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.3)] flex items-center justify-center space-x-1 active:scale-95 transition-transform cursor-pointer"
                 >
-                  <Trophy className="w-3.5 h-3.5 fill-slate-950" />
+                  <Trophy className="w-3 h-3 fill-slate-950" />
                   <span>DECLARE WIN</span>
                 </button>
               </>
@@ -1288,26 +1395,26 @@ export default function App() {
                 {/* Play Card */}
                 <button
                   onClick={handleCrazyPlayCard}
-                  disabled={currentTurn !== 'player' || !selectedCard}
+                  disabled={currentTurn !== 'player' || !selectedCard || isPenalizingPlayer}
                   className={`
-                    flex-[2] h-10 sm:h-12 rounded-xl font-bold text-[10px] sm:text-xs tracking-wider flex items-center justify-center space-x-1 sm:space-x-1.5 cursor-pointer active:scale-95 transition-all
-                    ${(currentTurn === 'player' && selectedCard)
+                    flex-[2] h-9 sm:h-11 rounded-xl font-bold text-[9px] sm:text-xs tracking-wider flex items-center justify-center space-x-1 sm:space-x-1.5 cursor-pointer active:scale-95 transition-all
+                    ${(currentTurn === 'player' && selectedCard && !isPenalizingPlayer)
                       ? 'bg-gradient-to-r from-amber-500 to-rose-600 text-white border border-amber-400/20 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
                       : 'bg-slate-900/50 text-slate-500 border border-slate-950 cursor-not-allowed'
                     }
                   `}
                 >
-                  <Flame className="w-4 h-4 text-white" />
+                  <Flame className="w-3.5 h-3.5 text-white" />
                   <span>PLAY SELECTED CARD</span>
                 </button>
 
                 {/* PASS Turn */}
                 <button
                   onClick={handleCrazyPassTurn}
-                  disabled={currentTurn !== 'player' || !playerHasDrawn}
+                  disabled={currentTurn !== 'player' || !playerHasDrawn || isPenalizingPlayer}
                   className={`
-                    flex-1 h-10 sm:h-12 rounded-xl font-bold text-[10px] sm:text-xs tracking-wider flex items-center justify-center space-x-1 cursor-pointer active:scale-95 transition-all
-                    ${(currentTurn === 'player' && playerHasDrawn)
+                    flex-1 h-9 sm:h-11 rounded-xl font-bold text-[9px] sm:text-xs tracking-wider flex items-center justify-center space-x-1 cursor-pointer active:scale-95 transition-all
+                    ${(currentTurn === 'player' && playerHasDrawn && !isPenalizingPlayer)
                       ? 'bg-slate-800 text-slate-100 border border-slate-700 hover:border-slate-600 shadow-[0_0_10px_rgba(255,255,255,0.05)]'
                       : 'bg-slate-900/30 text-slate-650 border border-slate-950 cursor-not-allowed'
                     }
@@ -1318,6 +1425,84 @@ export default function App() {
               </>
             )}
           </div>
+
+          {/* Suit Selection Modal Overlay */}
+          <AnimatePresence>
+            {isSuitSelectionOpen && playedCrazyCard && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm pointer-events-auto"
+              >
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 max-w-sm w-full mx-4 text-center shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center space-y-4 text-white"
+                >
+                  <div className="text-[10px] font-mono tracking-[0.3em] text-amber-400 uppercase font-black">
+                    🃏 WILD CARD PLAYED 🃏
+                  </div>
+                  
+                  <div className="flex items-center space-x-3 bg-slate-950/50 p-2.5 rounded-xl border border-white/5 w-full justify-center">
+                    <CardComponent card={playedCrazyCard} isMini={true} />
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-white uppercase tracking-wider">
+                        {formatCardName(playedCrazyCard)}
+                      </div>
+                      <div className="text-[9px] font-mono text-slate-400 uppercase leading-none mt-1">
+                        Select a suit to declare next
+                      </div>
+                    </div>
+                  </div>
+
+                  <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                    Which suit should be played next?
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-3 w-full">
+                    {/* Spades */}
+                    <button
+                      onClick={() => handleSuitSelect('spades')}
+                      className="h-14 bg-slate-950 hover:bg-slate-850 border border-slate-850 hover:border-slate-700 rounded-2xl flex flex-col items-center justify-center space-y-0.5 active:scale-95 transition-all cursor-pointer text-white"
+                    >
+                      <span className="text-xl">♠</span>
+                      <span className="text-[9px] font-mono uppercase tracking-wider font-bold">Spades</span>
+                    </button>
+
+                    {/* Hearts */}
+                    <button
+                      onClick={() => handleSuitSelect('hearts')}
+                      className="h-14 bg-slate-950 hover:bg-slate-850 border border-slate-850 hover:border-red-900/30 rounded-2xl flex flex-col items-center justify-center space-y-0.5 active:scale-95 transition-all cursor-pointer text-red-500"
+                    >
+                      <span className="text-xl">♥</span>
+                      <span className="text-[9px] font-mono uppercase tracking-wider font-bold">Hearts</span>
+                    </button>
+
+                    {/* Diamonds */}
+                    <button
+                      onClick={() => handleSuitSelect('diamonds')}
+                      className="h-14 bg-slate-950 hover:bg-slate-850 border border-slate-850 hover:border-amber-900/30 rounded-2xl flex flex-col items-center justify-center space-y-0.5 active:scale-95 transition-all cursor-pointer text-amber-500"
+                    >
+                      <span className="text-xl">♦</span>
+                      <span className="text-[9px] font-mono uppercase tracking-wider font-bold">Diamonds</span>
+                    </button>
+
+                    {/* Clubs */}
+                    <button
+                      onClick={() => handleSuitSelect('clubs')}
+                      className="h-14 bg-slate-950 hover:bg-slate-850 border border-slate-850 hover:border-emerald-900/30 rounded-2xl flex flex-col items-center justify-center space-y-0.5 active:scale-95 transition-all cursor-pointer text-emerald-500"
+                    >
+                      <span className="text-xl">♣</span>
+                      <span className="text-[9px] font-mono uppercase tracking-wider font-bold">Clubs</span>
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
         </div>
       )}
