@@ -97,7 +97,7 @@ export default function CardComponent({
 
   // Responsive dimensions
   // Mini is used for opponent cards (hidden/small) or condensed logs
-  const widthClass = isMini ? 'w-8 sm:w-10 aspect-[5/7]' : 'w-11 sm:w-16 aspect-[5/7]';
+  const widthClass = isMini ? 'w-[clamp(1.25rem,4dvh,2.25rem)] aspect-[5/7]' : 'w-[clamp(1.75rem,6dvh,4rem)] aspect-[5/7]';
   const sizeTextClass = isMini ? 'text-[8px]' : 'text-[9px] sm:text-xs';
   const sizeSymbolClass = isMini ? 'text-xs' : 'text-base sm:text-2xl';
 

@@ -10,7 +10,15 @@ html, body, #root {
   overscroll-behavior: none;
 }
 
-/* Height-responsive media queries for perfect viewport fitting and zero vertical scrolling */
+/*
+ * The gameplay screen (.game-play-container and its children) sizes itself
+ * fluidly using clamp(min, Ndvh, max) values set directly via Tailwind
+ * arbitrary classes in App.tsx / CardComponent.tsx. That scales continuously
+ * with the real viewport height on every device, so it doesn't need (and
+ * must not fight with) fixed-breakpoint overrides here.
+ */
+
+/* Height-responsive media queries for the Main Menu and Game Over screens */
 
 @media (max-height: 780px) {
   /* Main Menu Screen constrained height adjustments */
@@ -29,57 +37,6 @@ html, body, #root {
   }
   .main-menu-container .list-disc {
     font-size: 10px !important;
-  }
-  
-  /* Game Play Screen constrained height adjustments */
-  .game-play-container {
-    padding-top: 0.35rem !important;
-    padding-bottom: 0.35rem !important;
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-  }
-  .game-opponent-panel {
-    padding: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-  .game-opponent-panel .flex {
-    padding-top: 0px !important;
-    padding-bottom: 0px !important;
-  }
-  .game-turn-indicator {
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-  .game-felt-table {
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
-    padding: 0.5rem !important;
-    min-height: 90px !important;
-    border-width: 4px !important;
-    border-radius: 1.5rem !important;
-  }
-  .game-my-hand-container {
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
-    padding: 0.35rem !important;
-  }
-  .game-my-hand-container .game-hand-cards {
-    padding-top: 0.25rem !important;
-    padding-bottom: 0.25rem !important;
-    height: 80px !important;
-  }
-  .game-bottom-controls {
-    margin-top: 0.25rem !important;
-    padding-top: 0.35rem !important;
-    padding-bottom: 0.35rem !important;
-  }
-
-  /* Override card and stack widths to match constrained height scale */
-  .game-play-container .aspect-\[5\/7\] {
-    width: 2.75rem !important; /* 44px */
-  }
-  .game-opponent-panel .aspect-\[5\/7\] {
-    width: 2rem !important; /* 32px */
   }
 
   /* Game Over Screen adjustments */
@@ -119,52 +76,5 @@ html, body, #root {
   }
   .main-menu-container button#btn-sound-toggle {
     height: 2rem !important;
-  }
-
-  /* Game Play extra condensed height adjustments */
-  .game-play-container {
-    padding-top: 0.25rem !important;
-    padding-bottom: 0.25rem !important;
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-  }
-  .game-opponent-panel {
-    margin-bottom: 0.15rem !important;
-  }
-  .game-turn-indicator {
-    margin-top: 0.15rem !important;
-    margin-bottom: 0.15rem !important;
-  }
-  .game-felt-table {
-    margin-top: 0.15rem !important;
-    margin-bottom: 0.15rem !important;
-    padding: 0.35rem !important;
-    min-height: 80px !important;
-    border-width: 2px !important;
-    border-radius: 1rem !important;
-  }
-  .game-felt-table .grid {
-    gap: 0.5rem !important;
-  }
-  .game-my-hand-container {
-    margin-top: 0.15rem !important;
-    margin-bottom: 0.15rem !important;
-    padding: 0.25rem !important;
-  }
-  .game-my-hand-container .game-hand-cards {
-    height: 70px !important;
-  }
-  .game-bottom-controls {
-    margin-top: 0.15rem !important;
-    padding-top: 0.25rem !important;
-    padding-bottom: 0.25rem !important;
-  }
-
-  /* Override card widths to be even more compact */
-  .game-play-container .aspect-\[5\/7\] {
-    width: 2.25rem !important; /* 36px */
-  }
-  .game-opponent-panel .aspect-\[5\/7\] {
-    width: 1.75rem !important; /* 28px */
   }
 }

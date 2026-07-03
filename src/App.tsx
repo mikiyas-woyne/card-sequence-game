@@ -1055,7 +1055,7 @@ export default function App() {
 
       {/* Gameplay Table Screen */}
       {phase === 'playing' && (
-        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-y-auto lg:overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-0.5 sm:py-2 px-1 sm:px-4 max-w-5xl mx-auto relative">
+        <div className="game-play-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 flex flex-col justify-between py-[clamp(2px,0.5dvh,16px)] px-1 sm:px-4 max-w-5xl mx-auto relative">
           
           {/* Subtle gold lines overlay for real poker table vibe */}
           <div className="absolute inset-2 sm:inset-4 border border-yellow-500/10 rounded-2xl sm:rounded-[32px] pointer-events-none z-0" />
@@ -1064,7 +1064,7 @@ export default function App() {
           </div>
 
           {/* Header Bar */}
-          <div className="relative z-10 flex items-center justify-between bg-slate-950/40 p-1.5 sm:p-2 rounded-xl border border-white/5 mb-1 sm:mb-2">
+          <div className="relative z-10 flex items-center justify-between bg-slate-950/40 p-[clamp(2px,0.8dvh,8px)] rounded-xl border border-white/5 mb-[clamp(2px,0.6dvh,8px)] shrink-0">
             <button
               onClick={handleQuitToMenu}
               className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg hover:border-slate-700 text-[10px] font-mono text-slate-400 active:scale-95 transition-transform flex items-center space-x-1 cursor-pointer"
@@ -1098,7 +1098,7 @@ export default function App() {
           </div>
 
           {/* Opponent Hand Panel */}
-          <div className="game-opponent-panel relative z-10 flex flex-col items-center bg-slate-950/40 border border-white/5 rounded-xl p-1 mb-0.5 sm:mb-1.5 shrink-0">
+          <div className="game-opponent-panel relative z-10 flex flex-col items-center bg-slate-950/40 border border-white/5 rounded-xl p-[clamp(1px,0.4dvh,4px)] mb-[clamp(1px,0.4dvh,6px)] shrink-0">
             <div className="text-[8px] sm:text-[9px] font-mono tracking-widest text-slate-500 uppercase mb-0.5 sm:mb-1 flex items-center space-x-1">
               {isAiThinking && <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping mr-1 inline-block" />}
               <span>{isAiThinking ? 'AI OPPONENT IS THINKING...' : 'AI OPPONENT'}</span>
@@ -1114,7 +1114,7 @@ export default function App() {
                     ? { type: "spring", stiffness: 80, damping: 14, delay: idx * 0.12 }
                     : { type: "spring", stiffness: 300, damping: 28 }
                   }
-                  className="relative w-7 h-10 sm:w-9 sm:h-12 rounded-lg shadow-md overflow-hidden flex flex-col items-center justify-center"
+                  className="relative w-[clamp(1.25rem,4dvh,2.25rem)] aspect-[5/7] rounded-lg shadow-md overflow-hidden flex flex-col items-center justify-center"
                 >
                   <CocaColaCardBack isMini={true} />
                 </motion.div>
@@ -1123,14 +1123,14 @@ export default function App() {
           </div>
 
           {/* TURN POINTER INDICATOR */}
-          <div className="game-turn-indicator relative z-20 flex justify-center my-0.5 sm:my-1 shrink-0">
+          <div className="game-turn-indicator relative z-20 flex justify-center my-[clamp(1px,0.4dvh,4px)] shrink-0">
             {currentTurn === 'player' ? (
               <motion.div 
                 initial={{ y: -5, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 className="flex flex-col items-center space-y-0.5 sm:space-y-1"
               >
-                <div className="px-3 py-1 sm:px-4 sm:py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-white shadow-[0_0_10px_rgba(16,185,129,0.3)] border border-emerald-400 flex items-center space-x-1 sm:space-x-1.5">
+                <div className="px-3 py-[clamp(1px,0.4dvh,6px)] sm:px-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-white shadow-[0_0_10px_rgba(16,185,129,0.3)] border border-emerald-400 flex items-center space-x-1 sm:space-x-1.5">
                   <span className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-white animate-ping" />
                   <span>YOUR TURN</span>
                 </div>
@@ -1155,7 +1155,7 @@ export default function App() {
                 >
                   ▲
                 </motion.div>
-                <div className="px-3 py-1 sm:px-4 sm:py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-white shadow-[0_0_10px_rgba(245,158,11,0.3)] border border-amber-400 flex items-center space-x-1 sm:space-x-1.5">
+                <div className="px-3 py-[clamp(1px,0.4dvh,6px)] sm:px-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-white shadow-[0_0_10px_rgba(245,158,11,0.3)] border border-amber-400 flex items-center space-x-1 sm:space-x-1.5">
                   <span className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-white animate-pulse" />
                   <span>OPPONENT'S TURN</span>
                 </div>
@@ -1163,7 +1163,7 @@ export default function App() {
             )}
           </div>
           {/* POKER FELT TABLE SECTION (Luxurious Mahogany wood rim style) */}
-          <div className="game-felt-table relative z-10 flex-1 my-0.5 sm:my-1 border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-1 sm:p-3 flex flex-col justify-between relative min-h-[90px] sm:min-h-[130px] touch-pan-y shrink">
+          <div className="game-felt-table relative z-10 flex-1 my-[clamp(1px,0.4dvh,4px)] border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-[clamp(2px,0.6dvh,12px)] flex flex-col justify-between relative min-h-0 overflow-hidden touch-none shrink">
             
             {/* Table layout inner dashed gold line */}
             <div className="absolute inset-1 sm:inset-2 border border-dashed border-yellow-500/15 rounded-xl sm:rounded-[32px] pointer-events-none" />
@@ -1270,7 +1270,7 @@ export default function App() {
           </div>
 
           {/* Unified My Hand Row */}
-          <div className="game-my-hand-container relative z-10 my-0.5 sm:my-1 bg-slate-950/40 border border-white/5 rounded-2xl p-0.5 sm:p-2 space-y-0.5 sm:space-y-1.5 touch-pan-y shrink-0">
+          <div className="game-my-hand-container relative z-10 my-[clamp(1px,0.4dvh,4px)] bg-slate-950/40 border border-white/5 rounded-2xl p-[clamp(1px,0.4dvh,8px)] space-y-[clamp(1px,0.3dvh,6px)] touch-none shrink-0">
             <div className="flex items-center justify-between text-[8px] sm:text-[10px] font-mono font-bold uppercase text-slate-400 px-1">
               <span className="flex items-center space-x-1">
                 <span>MY HAND ({playerHand.length} CARDS)</span>
@@ -1284,7 +1284,7 @@ export default function App() {
             </div>
 
             {/* Hand row of cards - FANNED HELD-IN-HAND LAYOUT */}
-            <div className="game-hand-cards flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-0.5 sm:py-2 w-full h-[10vh] sm:h-[12vh] max-h-[95px] min-h-[65px] touch-pan-y">
+            <div className="game-hand-cards flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-[clamp(1px,0.4dvh,8px)] w-full h-[clamp(46px,11dvh,95px)] touch-none">
               {/* Front drop target zone spacer */}
               <div
                 onDragOver={handleDragOver}
@@ -1353,7 +1353,7 @@ export default function App() {
           </div>
 
           {/* Responsive Bottom Controls */}
-          <div className="game-bottom-controls relative w-full bg-slate-950/90 border border-slate-900 py-0.5 sm:py-1.5 px-2.5 sm:px-4 flex items-center justify-between gap-1.5 z-45 backdrop-blur-md rounded-xl mt-0.5 sm:mt-1 shrink-0">
+          <div className="game-bottom-controls relative w-full bg-slate-950/90 border border-slate-900 py-[clamp(1px,0.4dvh,6px)] px-2.5 sm:px-4 flex items-center justify-between gap-1.5 z-45 backdrop-blur-md rounded-xl mt-[clamp(1px,0.3dvh,4px)] shrink-0">
             {gameType === 'sequence' ? (
               <>
                 {/* Auto-Arrange */}
@@ -1509,7 +1509,7 @@ export default function App() {
 
         {/* Game Over Screen */}
       {phase === 'gameover' && (
-        <div className="game-over-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col items-center justify-center py-4 sm:py-8 px-4 sm:px-6 overflow-y-auto text-white select-none relative">
+        <div className="game-over-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col items-center justify-center py-4 sm:py-8 px-4 sm:px-6 overflow-hidden text-white select-none relative">
           {/* Neon BG rays */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.12)_0%,transparent_60%)] pointer-events-none" />
 
