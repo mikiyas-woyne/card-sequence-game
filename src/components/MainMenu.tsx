@@ -33,7 +33,7 @@ export default function MainMenu({ settings, onUpdateSettings, gameType, onSelec
   return (
     <div
       id="main-menu"
-      className="main-menu-container relative h-screen max-h-screen h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col items-center justify-between py-4 sm:py-8 px-4 sm:px-6 overflow-hidden text-white select-none"
+      className="main-menu-container relative h-screen max-h-screen h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col items-center justify-between py-4 sm:py-8 px-4 sm:px-6 overflow-y-auto text-white select-none"
     >
       {/* Background neon elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.15)_0%,transparent_60%)] pointer-events-none" />

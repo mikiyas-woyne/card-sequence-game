@@ -1163,7 +1163,7 @@ export default function App() {
             )}
           </div>
           {/* POKER FELT TABLE SECTION (Luxurious Mahogany wood rim style) */}
-          <div className="game-felt-table relative z-10 flex-1 my-0.5 sm:my-1 border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-1 sm:p-3 flex flex-col justify-between relative min-h-[90px] sm:min-h-[130px] touch-none shrink">
+          <div className="game-felt-table relative z-10 flex-1 my-0.5 sm:my-1 border-2 sm:border-[10px] border-amber-950/95 bg-gradient-to-b from-emerald-800 to-emerald-900 shadow-[0_12px_24px_rgba(0,0,0,0.5),inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-[40px] p-1 sm:p-3 flex flex-col justify-between relative min-h-[90px] sm:min-h-[130px] touch-pan-y shrink">
             
             {/* Table layout inner dashed gold line */}
             <div className="absolute inset-1 sm:inset-2 border border-dashed border-yellow-500/15 rounded-xl sm:rounded-[32px] pointer-events-none" />
@@ -1270,7 +1270,7 @@ export default function App() {
           </div>
 
           {/* Unified My Hand Row */}
-          <div className="game-my-hand-container relative z-10 my-0.5 sm:my-1 bg-slate-950/40 border border-white/5 rounded-2xl p-0.5 sm:p-2 space-y-0.5 sm:space-y-1.5 touch-none shrink-0">
+          <div className="game-my-hand-container relative z-10 my-0.5 sm:my-1 bg-slate-950/40 border border-white/5 rounded-2xl p-0.5 sm:p-2 space-y-0.5 sm:space-y-1.5 touch-pan-y shrink-0">
             <div className="flex items-center justify-between text-[8px] sm:text-[10px] font-mono font-bold uppercase text-slate-400 px-1">
               <span className="flex items-center space-x-1">
                 <span>MY HAND ({playerHand.length} CARDS)</span>
@@ -1284,7 +1284,7 @@ export default function App() {
             </div>
 
             {/* Hand row of cards - FANNED HELD-IN-HAND LAYOUT */}
-            <div className="game-hand-cards flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-0.5 sm:py-2 w-full h-[10vh] sm:h-[12vh] max-h-[95px] min-h-[65px] touch-none">
+            <div className="game-hand-cards flex items-center justify-center -space-x-3.5 sm:-space-x-5 overflow-visible py-0.5 sm:py-2 w-full h-[10vh] sm:h-[12vh] max-h-[95px] min-h-[65px] touch-pan-y">
               {/* Front drop target zone spacer */}
               <div
                 onDragOver={handleDragOver}
@@ -1509,7 +1509,7 @@ export default function App() {
 
         {/* Game Over Screen */}
       {phase === 'gameover' && (
-        <div className="game-over-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col items-center justify-center py-4 sm:py-8 px-4 sm:px-6 overflow-hidden text-white select-none relative">
+        <div className="game-over-container h-screen max-h-screen h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col items-center justify-center py-4 sm:py-8 px-4 sm:px-6 overflow-y-auto text-white select-none relative">
           {/* Neon BG rays */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.12)_0%,transparent_60%)] pointer-events-none" />
 
